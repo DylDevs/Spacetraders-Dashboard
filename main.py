@@ -29,7 +29,6 @@ logger = Logger()
 
 # Import external libraries
 import shutil
-import sys
 
 # Import Spacetraders API models
 from spacetraders.models.agent import Agent
@@ -55,7 +54,7 @@ if heartbeat.success:
 else:
     logger.critical(f"Spacetraders API is not available! More details: {heartbeat.status_code} - {heartbeat.error}\nPress enter to exit...")
     input()
-    sys.exit()
+    exit()
 
 # Login or register agent
 registered = False
@@ -68,7 +67,7 @@ if not login_request.success:
         if not register_request.success:
             logger.critical(f"Failed to register agent: {register_request.error}\nPress enter to exit...")
             input()
-            sys.exit()
+            exit()
         else:
             logger.info(f"Successfully registered as [bold]{register_request.data['agent']['symbol']}[/]!")
             Utils.SaveAgentToken(register_request.data['token'])
@@ -78,11 +77,11 @@ if not login_request.success:
         if not login_request.success:
             logger.critical(f"Failed to log in: {login_request.error}\nPress enter to exit...")
             input()
-            sys.exit()
+            exit()
     else: 
         logger.critical(f"Failed to log in: {login_request.error}\nPress enter to exit...")
         input()
-        sys.exit()
+        exit()
 
 # Create local Agent class from login data
 agent_data = Agent.from_dict(login_request.data)
@@ -105,7 +104,7 @@ if registered or FORCE_SYSTEMS_UPDATE or not Utils.SystemsExist():
     except Exception as e:
         logger.critical(f"Failed to clear systems cache folder: {e}, press enter to exit...")
         input()
-        sys.exit()
+        exit()
 
     if registered:
         logger.info("Wipe detected, updating systems cache...")
@@ -119,7 +118,7 @@ if registered or FORCE_SYSTEMS_UPDATE or not Utils.SystemsExist():
     if not update_systems_status:
         logger.critical("Failed to update systems cache, press enter to exit...")
         input()
-        sys.exit()
+        exit()
 
     # Update waypoints for the headquarters system (This is temporary until I don't suck)
     home_agent_symbol = agent_data.headquarters.replace(f"-A1", "")
@@ -127,7 +126,7 @@ if registered or FORCE_SYSTEMS_UPDATE or not Utils.SystemsExist():
     if not update_waypoints_status:
         logger.critical("Failed to update waypoints cache, press enter to exit...")
         input()
-        sys.exit()
+        exit()
 
 # Load systems into memory and map agents to systems
 Variables.systems = Utils.LoadSystems()
