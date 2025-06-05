@@ -1,2 +1,5 @@
 # Cache items
 /cache/*
+
+# __pycache__
+**/__pycache__/
