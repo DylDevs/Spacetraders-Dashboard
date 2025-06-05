@@ -42,9 +42,52 @@ import backend.api as API
 # Constants
 FORCE_SYSTEMS_UPDATE = False
 
-# Get account and agent tokens from files
+def FirstTimeSetupAccountToken():
+    account_token = input("")
+    logger.info("Great! Now we'll register your new agent so you can start exploring the universe...")
+    
+    register_request = API.Handler(API.Request("register", "POST", {
+        'symbol': Variables.AGENT_NAME, 'faction': 'UNITED'}, custom_token=account_token
+    ))
+    if not register_request.success:
+        logger.critical(f"Failed to register agent: {register_request.error}\nLet's try again...")
+        return False
+    
+    logger.info(f"Successfully registered as [bold]{register_request.data['agent']['symbol']}[/]!")
+    Utils.SaveAccountToken(account_token)
+    Utils.SaveAgentToken(register_request.data['token'])
+
+    logger.info("You are now ready to start exploring the universe!")
+    logger.info("Press enter to continue...")
+    input()
+
+    return True
+    
+def RegisterAgent():
+    register_request = API.Handler(API.Request("register", "POST", {
+        'symbol': Variables.AGENT_NAME, 'faction': 'UNITED'}, custom_token=Utils.AccountToken())
+    )
+    if not register_request.success:
+        logger.critical(f"Failed to register agent: {register_request.error}\nPress enter to exit...")
+        input()
+        exit()
+    else:
+        logger.info(f"Successfully registered as [bold]{register_request.data['agent']['symbol']}[/]!")
+        Utils.SaveAgentToken(register_request.data['token'])
+        return True
+
+# If the account token is None, walk through first time setup
+if Utils.AccountToken() is None:
+    print("") # New line for spacing
+    logger.info("Welcome to the [bold]Spacetraders API Dashboard[/]!")
+    logger.info("No account token was found, so we will walk through the setup process...")
+    logger.info("Please go to https://my.spacetraders.io/ and login with your account, then go to Settings -> Account Tokens -> Generate New Token.")
+    logger.info("Once you have generated the token, enter it below and press enter...")
+    while not FirstTimeSetupAccountToken(): pass # Loop until the account token is saved
+    # Agent has been created, so we can now continue like normal
+
+# Load the account and agent token from disk
 Variables.account_token = Utils.AccountToken()
-# If this is the first register, the agent token will be "Register"
 Variables.agent_token = Utils.AgentToken()
 
 # Check if API is available
@@ -52,7 +95,7 @@ heartbeat = API.Handler(API.Request(""))
 if heartbeat.success:
     logger.info(Utils.FormatHeartbeat(heartbeat.data), highlight=False)
 else:
-    logger.critical(f"Spacetraders API is not available! More details: {heartbeat.status_code} - {heartbeat.error}\nPress enter to exit...")
+    logger.critical(f"Spacetraders API is not available! More details: {heartbeat.error}\nPress enter to exit...")
     input()
     exit()
 
@@ -62,16 +105,8 @@ login_request = API.Handler(API.Request("my/agent"))
 if not login_request.success:
     if str(login_request.status_code) == "4113" or Variables.agent_token == "Register": # Agent not found
         logger.warning("Server wipe detected, registering new agent...")
-        register_request = API.Handler(API.Request("register", "POST", {'symbol': Variables.AGENT_NAME, 'faction': 'UNITED'}))
-
-        if not register_request.success:
-            logger.critical(f"Failed to register agent: {register_request.error}\nPress enter to exit...")
-            input()
-            exit()
-        else:
-            logger.info(f"Successfully registered as [bold]{register_request.data['agent']['symbol']}[/]!")
-            Utils.SaveAgentToken(register_request.data['token'])
-            registered = True
+        registered = RegisterAgent()
+        registered = True
 
         login_request = API.Handler(API.Request("my/agent"))
         if not login_request.success:

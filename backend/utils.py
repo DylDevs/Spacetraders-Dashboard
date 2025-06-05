@@ -47,11 +47,7 @@ def FormatAgent(data : dict) -> str:
 
 def AccountToken() -> str:
     if not os.path.exists(Variables.ACCOUNT_TOKEN_FILE):
-        logger.warning("Account token file does not exist! Enter your account token and press enter...")
-        token = input()
-        with open(Variables.ACCOUNT_TOKEN_FILE, "w") as f:
-            f.write(token)
-            return token
+        return None
         
     with open(Variables.ACCOUNT_TOKEN_FILE, "r") as f: 
         token = f.read().strip()
@@ -59,10 +55,15 @@ def AccountToken() -> str:
 
 def AgentToken() -> str:
     if not os.path.exists(Variables.AGENT_TOKEN_FILE):
-        return "Register"
+        return None
     with open(Variables.AGENT_TOKEN_FILE, "r") as f: 
         token = f.read().strip()
         return token
+    
+def SaveAccountToken(token : str) -> None:
+    with open(Variables.ACCOUNT_TOKEN_FILE, "w") as f:
+        f.truncate(0)
+        f.write(token)
     
 def SaveAgentToken(token : str) -> None:
     with open(Variables.AGENT_TOKEN_FILE, "w") as f:

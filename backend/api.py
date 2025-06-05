@@ -41,6 +41,7 @@ class Request:
     json : dict = None
     headers : dict = None
     timeout : int = 5
+    custom_token : str = None
 
 @dataclass
 class Response:
@@ -59,7 +60,7 @@ def _APIRequest(request : Request) -> Response:
     if not request.headers:
         request.headers = {}
     request.headers['Content-Type'] = 'application/json'
-    request.headers['Authorization'] = f'Bearer {Variables.agent_token}'
+    request.headers['Authorization'] = f'Bearer {Variables.agent_token if request.custom_token is None else request.custom_token}'
 
     rate_limiter.Wait()
     try:
@@ -94,10 +95,20 @@ def _APIRequest(request : Request) -> Response:
         
         json_response : dict = response.json()
         
-        if response.status_code != 200: # Non-200 status code
+        if response.status_code < 200 or response.status_code >= 300: # Non-200's status code
+            try:
+                status_code = json_response['error']['code']
+            except:
+                status_code = response.status_code
+
+            try:
+                error_message = json_response['error']['message']
+            except:
+                error_message = json_response
+
             return Response(
-                error=f"{response.status_code} - {json_response['error']['message']}",
-                status_code=response.status_code
+                error=f"{status_code} - {error_message}",
+                status_code=status_code
             )
         
         if 'data' in json_response: # Endpoint returns data inside of a data key
