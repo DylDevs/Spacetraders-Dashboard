@@ -88,4 +88,3 @@ class VisualizationWaypoint():
             y=obj.get("y"),
             orbitals=obj.get("orbitals")
         )
-
