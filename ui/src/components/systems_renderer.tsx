@@ -44,7 +44,6 @@ function Renderer() {
       try {
         const result = await GetSystems();
         setSystems(result.map((system: any) => new System(system)));
-        console.log(result);
       } catch (error) {
         console.error('Error fetching systems:', error);
       }
@@ -87,15 +86,15 @@ function Renderer() {
         {systems.map((system, index) => (
           <React.Fragment key={index}>
             <Circle
-              x={system.x - SYSTEM_CIRCLE_RADIUS - 15}
-              y={system.y + SYSTEM_CIRCLE_RADIUS}
+              x={system.x}
+              y={system.y}
               radius={SYSTEM_CIRCLE_RADIUS}
               fill={system.color}
             />
             {system.agent && (
               <Text
-                x={system.x}
-                y={system.y}
+                x={system.x + SYSTEM_CIRCLE_RADIUS + 15}
+                y={system.y - SYSTEM_CIRCLE_RADIUS}
                 text={system.agent}
                 fontSize={50}
                 fill="white"
