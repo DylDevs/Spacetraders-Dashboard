@@ -72,20 +72,6 @@ def StartFrontend():
     subprocess.run("cd ui && npm run dev", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def Run(frontend = True, backend = True):
-    try:
-        sockets = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sockets.connect(("8.8.8.8", 80))
-        ip = sockets.getsockname()[0]
-        sockets.close()
-    except:
-        ip = "localhost"
-
-    # Write webserver URL to cache for frontend to read
-    with open(Variables.WEBSERVER_CACHE_FILE, "w") as f:
-        f.truncate(0)
-        f.write(f"http://{ip}:8000")
-        f.close()
-
     if backend: threading.Thread(target=StartBackend).start()
     if frontend: threading.Thread(target=StartFrontend).start()
 

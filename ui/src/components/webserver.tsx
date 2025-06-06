@@ -1,19 +1,20 @@
 // @ts-ignore | Prevents module not found error from js-cookie, even though it is installed
 import Cookies from 'js-cookie';
 
-async function FetchServer(extension: string, body: any = {}, method : string = "GET", error : boolean = true) {
+async function FetchServer(path: string, body: any = {}, method : string = "GET", error : boolean = true) {
   const webserver_url = Cookies.get("webserver_url")
+  const full_url = webserver_url + path
   try {
-    let response = await fetch(webserver_url + extension, {
+    let response = await fetch(full_url, {
       method: method,
       headers: {
         "Content-Type": "application/json",
       },
-      ...(method !== "GET" && method !== "HEAD" ? { body: JSON.stringify(body) } : {}),
+      ...(method !== "GET" ? { body: JSON.stringify(body) } : {}),
     });
   
     if (!response.ok && error) {
-      throw new Error("Response was not ok to URL: " + webserver_url + " (Response Status: " + response.status + ")");
+      throw new Error("Response was not ok to URL: " + full_url + " - " + response.status);
     } else if (!response.ok && !error) {
       return false;
     }

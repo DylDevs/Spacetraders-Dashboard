@@ -11,8 +11,8 @@ import '@/styles/globals.css';
 import Cookies from 'js-cookie';
 
 export const metadata: Metadata = {
-    title: "Pyro Axis AI Training",
-    description: "Frontend UI for Pyro Axis AI Training",
+    title: "Spacetraders Dashboard",
+    description: "Dashboard to visualize your fleet and navigate the universe in Spacetraders",
     icons: ["favicon.ico"],
 };
 
@@ -21,9 +21,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
   const setupConnection = async () => {
     try {
-      const reponse = await fetch("/api/data")
-      const json = await reponse.json()
-      const webserver_url = json["webserver_url"]
+      const webserver_url = "http://localhost:8000";
       const connected = await AttemptServerConnection(webserver_url);
     
       Cookies.set("connected", connected ? "true" : "false");
@@ -44,7 +42,7 @@ export default function App({ Component, pageProps }: AppProps) {
           setTimeout(() => {
             setShowLoading(false);
             resolve();
-          }, 2500);
+          }, 1000);
           console.log("Connected to training server at " + Cookies.get("webserver_url"));
         } catch (error) {
           reject(error);
