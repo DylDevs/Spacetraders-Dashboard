@@ -3,30 +3,14 @@ import { GetWaypoints } from '@/components/webserver';
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-
-const WAYPOINT_COLORS : Record<string, string> = {
-    'PLANET': '#3FA34D',                  // Earth-like green, natural and prominent
-    'GAS_GIANT': '#1E90FF',               // Deep sky blue, massive and vibrant
-    'MOON': '#AAAAAA',                    // Pale grey, muted but distinct
-    'ORBITAL_STATION': '#CCCCFF',         // Soft blue-grey, industrial and visible
-    'JUMP_GATE': '#FF69B4',               // Hot pink, sci-fi energy feel
-    'ASTEROID_FIELD': '#8B7D7B',          // Dusty brown-grey, cluttered zone feel
-    'ASTEROID': '#6E6E6E',                // Solid dark grey
-    'ENGINEERED_ASTEROID': '#FFB347',     // Orange-tan, shows artificial tampering
-    'ASTEROID_BASE': '#B5651D',           // Rich brown, grounded and hidden
-    'NEBULA': '#8A2BE2',                  // Deep violet, gaseous glow
-    'DEBRIS_FIELD': '#808080',            // Neutral grey, floating junk
-    'GRAVITY_WELL': '#00CED1',            // Bright cyan, intense pull
-    'ARTIFICIAL_GRAVITY_WELL': '#7FFFD4', // Aquamarine, techy gravity zone
-    'FUEL_STATION': '#FFD700',            // Bright gold, quick recognition
-    'ORBITAL': '#A0C4FF',                 // Soft light blue, general orbit marker
-}
+import Loading from '@/components/loading';
 
 class Waypoint {
   symbol: string;
   x: number;
   y: number;
   orbitals: {x: number, y: number}[];
+  type: string;
   color: string;
 
   constructor({ symbol, type, x, y, orbitals }: any) {
@@ -34,15 +18,28 @@ class Waypoint {
     this.x = x;
     this.y = y;
     this.orbitals = orbitals;
-    this.color = WAYPOINT_COLORS[type] || '#FFFFFF';
+    this.type = type;
+    // Hardcoded color for now
+    this.color = '#FFFFFF';
   }
 }
+
 const WAYPOINT_CIRCLE_RADIUS = 5;
 const WAYPOINT_ORBITAL_RADIUS = 2;
 const ZOOM_SCALE = 1.1;
+const ZOOM_MIN_SCALE = 0.3;
+const ZOOM_MAX_SCALE = 6;
 
 function OrbitRingRadius(x : number, y : number) {
     return Math.sqrt(x * x + y * y);
+}
+
+function FormatType(type : string) {
+    /*
+    This function formats the type of the waypoint
+    Foe example: 'GAS_GIANT' -> 'Gas Giant'
+    */
+    return type.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function Renderer() {
@@ -52,9 +49,11 @@ function Renderer() {
   const stageRef = useRef<any>(null);
   const [scale, setScale] = useState(0.5);
   const [position, setPosition] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const result = await GetWaypoints();
         setWaypoints(result.waypoints.map((system: any) => new Waypoint(system)));
@@ -62,6 +61,7 @@ function Renderer() {
       } catch (error) {
         console.error('Error fetching systems:', error);
       }
+      setLoading(false);
     };
 
     fetchData();
@@ -69,16 +69,28 @@ function Renderer() {
 
   function SelectedWaypointCard() {
     return (
-      <Card className='flex flex-col w-1/6 h-1/2'>
+      <Card className='flex flex-col w-full h-full'>
         {selected_waypoint ? (
           <div>
-            <h2 className='text-xl font-bold text-center my-3'>{selected_waypoint.symbol}</h2>
-            <Separator className='mx-[20px] w-[calc(100%-40px)]' />
+            <h2 className='text-xl font-bold text-center mt-3'>{selected_waypoint.symbol}</h2>
+            <p className='text-center text-sm text-zinc-500 my-2'>{FormatType(selected_waypoint.type)}</p>
+            <Separator className='w-10/12 mx-auto' />
+            <div className='flex flex-col space-y-2 m-3'>
+              <span className='text-md text-muted-foreground space-x-1'>
+                <a className='font-bold text-white'>Coordinates: </a>
+                {selected_waypoint.x}, {selected_waypoint.y}
+              </span>
+              <span className='text-md text-muted-foreground space-x-1'>
+                <a className='font-bold text-white'>Orbitals: </a>
+                {selected_waypoint.orbitals.length}
+              </span>
+            </div>
+            <h2 className='text-sm text-zinc-500 text-center mt-3'>More coming soon...</h2>
           </div>
         ) : (
           <div>
             <h2 className='text-xl font-bold text-center my-3'>No waypoint selected</h2>
-            <Separator className='mx-[20px] w-[calc(100%-40px)]' />
+            <Separator className='w-10/12 mx-auto' />
             <p className='text-center text-sm text-zinc-500 mt-3'>Click a waypoint on the map to see its details</p>
           </div>
         )}
@@ -95,6 +107,10 @@ function Renderer() {
     const direction = e.evt.deltaY > 0 ? 1 : -1;
     const newScale = direction > 0 ? oldScale / ZOOM_SCALE : oldScale * ZOOM_SCALE;
 
+    if (newScale < ZOOM_MIN_SCALE || newScale > ZOOM_MAX_SCALE) {
+      return;
+    }
+
     const mousePointTo = {
       x: (pointer.x - position.x) / oldScale,
       y: (pointer.y - position.y) / oldScale,
@@ -108,6 +124,14 @@ function Renderer() {
     setScale(newScale);
     setPosition(newPos);
   };
+
+  if (loading) {
+    return (
+      <div className='w-full h-full flex items-center justify-center'>
+        <Loading loading_text="Loading waypoints..." />
+      </div>
+    )
+  }
 
   return (
     <div className='w-full h-full'>
@@ -160,7 +184,7 @@ function Renderer() {
       </Stage>
       {/* Make the selected waypoint card show in top-left corner below the top bar */}
       <div className="absolute top-20 left-4 z-10 w-full h-full pointer-events-none">
-        <div className="w-full h-fullpointer-events-auto">
+        <div className="w-1/6 h-1/2 pointer-events-auto">
           <SelectedWaypointCard />
         </div>
       </div>
