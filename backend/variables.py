@@ -19,14 +19,16 @@ SYSTEMS_CACHE_FOLDER = os.path.join(CACHE, 'systems')
 AGENT_NAME = "DylDev"
 
 # Account token variable
-account_token : str = None
+account_token : str = ""
 # Agent token variable
-agent_token : str = None
+agent_token : str = ""
 
 # Variable to hold systems when loaded to memory
-systems : list = None
+systems : list = []
 # The system that the agent is currently in
-current_system : str = None
+current_system : str = ""
+# Dictionary of systems and their waypoints (this will not include all systems, only ones that have been cached by the frontend)
+waypoints : dict = {}
 
-# API
+# Instance of backend.api, this is to prevent circular imports in files that the API uses
 API = None

@@ -215,8 +215,7 @@ def LoadWaypoints(system_symbol : str, simple : bool = True) -> list[Waypoint]:
             else:
                 waypoints.append(Waypoint.from_dict(json.loads(f.read())))
 
-    logger.info(f"Successfully loaded [bold]{len(waypoints)}[/bold] systems into memory!")
-
+    logger.info(f"Successfully loaded [bold]{len(waypoints)}[/bold] waypoints from system [bold]{system_symbol}[/bold] into memory!")
     return waypoints
 
 # region Agents

@@ -59,7 +59,13 @@ async def CurrentSystem():
 @app.get("/systems/{system_symbol}/waypoints")
 async def Waypoints(system_symbol: str):
     try:
-        waypoints = Utils.LoadWaypoints(system_symbol)
+        if Variables.waypoints.get(system_symbol) is None:
+            waypoints = Utils.LoadWaypoints(system_symbol)
+            # Cache them in RAM for faster access
+            Variables.waypoints[system_symbol] = waypoints
+        else:
+            # The waypoints have been accessed before
+            waypoints = Variables.waypoints[system_symbol]
         return {"status": "ok", "waypoints": waypoints}
     except:
         return {"status": "error", "traceback": traceback.format_exc()}
