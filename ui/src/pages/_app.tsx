@@ -1,6 +1,6 @@
 import type { AppProps } from 'next/app';
 import { ThemeProvider } from '@/components/theme_provider';
-import { Loading } from '@/components/loading';
+import Loading from '@/components/loading';
 import { useEffect, useState } from 'react'; 
 import { toast, Toaster } from 'sonner';
 import { Metadata } from 'next';
@@ -62,7 +62,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <ThemeProvider defaultTheme="dark" attribute="class">
       <Toaster position="bottom-right" theme="dark" closeButton={true} duration={5000} />
       <div>
-        {showLoading && <Loading loading_text="Connecting to server..." fullscreen />}
+        {showLoading && <Loading loading_text="Connecting to server..." />}
         <div style={{ display: showLoading ? "none" : "block" }} className='overflow-hidden'>
           <Component {...pageProps} />
         </div>
