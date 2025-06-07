@@ -1,24 +1,12 @@
-import { BarLoader } from "react-spinners"
+import { ClipLoader } from "react-spinners"
 
-function Loading({ loading_text, fullscreen }: { loading_text: string, fullscreen: boolean }) {
-    if (!fullscreen) {
-        return (
-            <div className="flex flex-col text-center items-center space-y-5">
-                <h2 className="text-xl font-bold">Spacetraders Dashboard</h2>
-                <BarLoader color="#ffffff" height={5} loading={true} speedMultiplier={1.2} width={250} />
-                <p>{loading_text}</p>
-            </div>
-        );
-    }
-
+function Loading({ loading_text }: { loading_text: string }) {
     return (
-        <div className="flex flex-col w-screen h-screen text-center items-center justify-center space-y-5">
-            <h2 className="text-xl font-bold">Spacetraders Dashboard</h2>
-            <BarLoader color="#ffffff" height={5} loading={true} speedMultiplier={1.2} width={250} />
-            <p>{loading_text}</p>
+        <div className="flex flex-col w-screen h-screen text-center items-center justify-center space-y-3">
+            <ClipLoader color="#ffffff50" loading={true} size={40} />
+            <p className="text-zinc-500">{loading_text}</p>
         </div>
     );
 }
 
-
-export { Loading }
+export default Loading
